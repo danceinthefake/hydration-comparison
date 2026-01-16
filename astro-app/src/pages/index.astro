@@ -1,0 +1,57 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Card from '../components/Card.astro';
+import Footer from '../components/Footer.astro';
+
+const cards = [
+  { title: 'Fast Performance', description: 'Server-side rendering delivers content quickly to users.' },
+  { title: 'SEO Friendly', description: 'Search engines can easily crawl and index your content.' },
+  { title: 'Zero JavaScript', description: 'Static content requires no client-side JavaScript.' },
+];
+---
+
+<Layout title="Astro SSR - Hydration Test">
+  <Header siteName="Astro SSR" />
+  <main>
+    <section class="hero">
+      <h1>Welcome to Astro</h1>
+      <p>Testing zero hydration with server-side rendering</p>
+    </section>
+    <section class="cards">
+      {cards.map((card) => (
+        <Card title={card.title} description={card.description} />
+      ))}
+    </section>
+  </main>
+  <Footer />
+</Layout>
+
+<style>
+  main {
+    min-height: calc(100vh - 200px);
+  }
+  .hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-align: center;
+    padding: 4rem 2rem;
+  }
+  .hero h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+  .hero p {
+    font-size: 1.25rem;
+    opacity: 0.9;
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    padding: 4rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #f5f5f5;
+  }
+</style>
