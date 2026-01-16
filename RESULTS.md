@@ -18,114 +18,124 @@ This project compares **hydration behavior** across different frameworks when bu
 
 ## Interactive Features Tested
 
-All apps include the same interactive components:
+All apps include the same 12 interactive components:
 
 | Component | Reactivity |
 |-----------|------------|
 | Mobile Navigation | Toggle menu state |
-| Stats Counter | Intersection Observer + animation |
+| Stats Counter | Intersection Observer + animated counting |
 | Testimonial Carousel | Auto-slide interval + manual controls |
 | FAQ Accordion | Expand/collapse state |
 | Contact Form | Form validation + submission |
 | Back to Top | Scroll position listener |
+| **Modal** | Portal rendering, ESC key, click outside |
+| **Tabs** | Multiple state management, ARIA roles |
+| **Image Lightbox** | Gallery with keyboard navigation |
+| **Cookie Banner** | localStorage persistence |
+| **Pricing Toggle** | Monthly/yearly computed values |
+| **Search Box** | Debounced input, real-time filtering |
 
 ---
 
-## Results Summary
+## Benchmark Results (Production Build)
 
-### JavaScript Bundle Size (Production Build)
+### JavaScript Bundle Size
 
-| App | JS Size | HTML Size | Total |
-|-----|---------|-----------|-------|
-| **astro-svelte-app** | ~30KB | ~16KB | ~46KB |
-| **astro-vue-app** | ~45KB | ~16KB | ~61KB |
-| **astro-react-app** | ~55KB | ~16KB | ~71KB |
-| **nuxt-app** | ~150KB | ~20KB | ~170KB |
-| **nextjs-app** | ~200KB+ | ~25KB | ~225KB+ |
+| App | Raw JS Size | Gzip Size | HTML Size |
+|-----|-------------|-----------|-----------|
+| **astro-svelte-app** | 60.6 KB | **21.2 KB** | 26.5 KB |
+| **astro-vue-app** | 109.3 KB | 42.2 KB | 25.3 KB |
+| **astro-react-app** | 194.5 KB | 57.7 KB | 50.9 KB |
+| **nuxt-app** | 212.8 KB | 79.3 KB | SSR |
+| **nextjs-app** | 735.5 KB | 218.1 KB | SSR |
 
-### Key Findings
+### JavaScript Savings (vs Next.js)
 
-#### Astro (All Variants)
-- **Selective hydration** - only interactive components ship JS
-- Static content (hero, cards, footer) = 0 JS
-- `client:load` - hydrates immediately
-- `client:visible` - hydrates when visible (lazy)
-- **Svelte has smallest runtime** (~30KB)
-- **React has largest runtime** (~55KB)
-
-#### Nuxt
-- Full Vue hydration by default
-- Can disable with `experimental: { noScripts: true }` (breaks interactivity)
-- Vue runtime always included when interactive
-- Good middle ground between Astro and Next.js
-
-#### Next.js
-- Full React hydration required
-- Cannot achieve zero JS with interactive components
-- React runtime (~140KB) always shipped
-- `"use client"` components add to bundle
+| App | Reduction (Raw) | Reduction (Gzip) |
+|-----|-----------------|------------------|
+| astro-svelte-app | **91.8%** smaller | **90.3%** smaller |
+| astro-vue-app | **85.1%** smaller | **80.6%** smaller |
+| astro-react-app | **73.6%** smaller | **73.5%** smaller |
+| nuxt-app | **71.1%** smaller | **63.6%** smaller |
 
 ---
 
-## Detailed Analysis
+## Detailed Bundle Analysis
 
-### Astro + Svelte (Best Performance)
+### 1. Astro + Svelte (Best Performance)
 
 ```
 dist/_astro/
-├── index.css                    8.05 KB
-├── each.js                      0.07 KB (Svelte runtime)
-├── client.js                    0.70 KB
-├── BackToTop.js                 0.89 KB
+├── client.js                    1.97 KB
+├── BackToTop.js                 2.19 KB
+├── CookieBanner.js              2.44 KB
 ├── StatsCounter.js              2.69 KB
 ├── MobileNav.js                 3.46 KB
 ├── FaqAccordion.js              3.57 KB
+├── Modal.js                     3.97 KB
+├── Tabs.js                      4.85 KB
 ├── TestimonialCarousel.js       5.10 KB
-├── index.js                     6.27 KB
-└── ContactForm.js               6.86 KB
+├── ImageLightbox.js             5.47 KB
+├── PricingToggle.js             6.27 KB
+├── index.js (shared)            6.73 KB
+├── ContactForm.js               6.86 KB
+└── SearchBox.js                 7.79 KB
+────────────────────────────────────────
+Total JS: 60.6 KB (21.2 KB gzip)
 ```
 
-**Total JS: ~30KB** (smallest)
+**Why smallest**: Svelte compiles to vanilla JS at build time - no runtime needed.
 
-### Astro + Vue
-
-```
-dist/_astro/
-├── Vue runtime + components    ~45KB total
-```
-
-**Total JS: ~45KB**
-
-### Astro + React
+### 2. Astro + Vue
 
 ```
 dist/_astro/
-├── React runtime + components  ~55KB total
+├── Vue runtime-core             70.07 KB
+├── Vue runtime-dom              11.38 KB
+├── Components (12 total)        ~28 KB
+────────────────────────────────────────
+Total JS: 109.3 KB (42.2 KB gzip)
 ```
 
-**Total JS: ~55KB**
+**Note**: Vue runtime (~81 KB) is shared across all components via code splitting.
 
-### Nuxt (Full Hydration)
+### 3. Astro + React
+
+```
+dist/_astro/
+├── React runtime (client.js)    135.60 KB
+├── Components (12 total)        ~59 KB
+────────────────────────────────────────
+Total JS: 194.5 KB (57.7 KB gzip)
+```
+
+**Note**: React runtime is larger than Vue, but still selective hydration.
+
+### 4. Nuxt (Full Hydration)
 
 ```
 .output/public/_nuxt/
-├── Vue runtime                 ~90KB
-├── Nuxt runtime                ~30KB
-├── Components                  ~30KB
+├── Vue runtime                  ~90 KB
+├── Nuxt framework               ~60 KB
+├── Components + app             ~63 KB
+────────────────────────────────────────
+Total JS: 212.8 KB (79.3 KB gzip)
 ```
 
-**Total JS: ~150KB**
+**Note**: Full page hydration - even static content is hydrated.
 
-### Next.js
+### 5. Next.js (Full Hydration)
 
 ```
 out/_next/static/
-├── framework.js               ~137KB (React)
-├── main.js                    ~50KB
-├── Components                 ~50KB+
+├── React framework chunks       ~530 KB
+├── Main bundle                  ~120 KB
+├── Page + Components            ~85 KB
+────────────────────────────────────────
+Total JS: 735.5 KB (218.1 KB gzip)
 ```
 
-**Total JS: ~200KB+** (largest)
+**Note**: Largest bundle - React 18 with full hydration of all components.
 
 ---
 
@@ -134,84 +144,111 @@ out/_next/static/
 ### Islands Architecture (Astro)
 
 ```html
-<!-- Static - No JS -->
+<!-- Static - No JS shipped -->
 <header>...</header>
 <main>
-  <section class="hero">...</section>  <!-- Static -->
-  <section class="cards">...</section> <!-- Static -->
+  <section class="hero">...</section>      <!-- Static: 0 KB -->
+  <section class="cards">...</section>     <!-- Static: 0 KB -->
 </main>
+<footer>...</footer>
 
-<!-- Interactive - JS loaded -->
-<MobileNav client:load />      <!-- Immediate -->
-<StatsCounter client:visible /> <!-- Lazy -->
-<ContactForm client:visible />  <!-- Lazy -->
+<!-- Interactive Islands - Only these ship JS -->
+<MobileNav client:load />                  <!-- Immediate hydration -->
+<StatsCounter client:visible />            <!-- Lazy: hydrate when visible -->
+<SearchBox client:visible />               <!-- Lazy -->
+<Tabs client:visible />                    <!-- Lazy -->
+<PricingToggle client:visible />           <!-- Lazy -->
+<ImageLightbox client:visible />           <!-- Lazy -->
+<Modal client:load />                      <!-- Immediate -->
+<CookieBanner client:load />               <!-- Immediate -->
 ```
 
-**Benefit**: Only interactive parts ship JavaScript.
+**Benefit**: Only 12 interactive components ship JavaScript. Static content = 0 JS.
 
 ### Full Hydration (Nuxt/Next.js)
 
 ```html
-<!-- Everything hydrates -->
+<!-- Everything hydrates, even static content -->
 <div id="__nuxt">
-  <header>...</header>  <!-- Hydrated -->
-  <main>...</main>      <!-- Hydrated -->
-  <footer>...</footer>  <!-- Hydrated -->
+  <header>...</header>       <!-- Hydrated -->
+  <main>...</main>           <!-- Hydrated -->
+  <footer>...</footer>       <!-- Hydrated -->
 </div>
-<script>/* Full framework runtime */</script>
+<script src="/_nuxt/entry.js"></script>  <!-- Full framework runtime -->
 ```
 
-**Drawback**: Entire page requires JavaScript, even static content.
+**Drawback**: Entire page requires JavaScript for hydration, even parts that never change.
 
 ---
 
-## Configuration
+## Key Findings
 
-### Astro (Islands)
-```js
-// astro.config.mjs
-export default defineConfig({
-  output: 'static',
-  integrations: [vue()] // or react() or svelte()
-});
-```
+### 1. Runtime Size Matters
 
-### Nuxt (Full Hydration)
-```ts
-// nuxt.config.ts
-export default defineNuxtConfig({
-  ssr: true,
-  // Set to true to disable JS (breaks interactivity)
-  experimental: { noScripts: false }
-});
-```
+| Framework | Runtime Size |
+|-----------|-------------|
+| Svelte | ~0 KB (compiles away) |
+| Vue 3 | ~81 KB |
+| React 18 | ~136 KB |
 
-### Next.js (Full Hydration)
-```js
-// next.config.js
-module.exports = {
-  output: 'export'
-};
-```
+### 2. Architecture Matters More
+
+Even with the same UI library (React), Astro ships **73% less JavaScript** than Next.js because of selective hydration.
+
+### 3. Lazy Loading (`client:visible`) Helps
+
+Astro's `client:visible` directive defers hydration until components enter the viewport, improving initial load performance.
+
+### 4. Trade-offs
+
+| Approach | Pros | Cons |
+|----------|------|------|
+| **Astro Islands** | Minimal JS, fast initial load | More setup for complex state sharing |
+| **Full Hydration** | Simpler mental model, full reactivity | Larger bundles, slower initial load |
 
 ---
 
 ## Recommendations
 
-| Use Case | Recommended Framework |
-|----------|----------------------|
-| Content sites with minimal interactivity | Astro + Svelte |
-| Marketing sites with forms/carousels | Astro + Vue/React |
-| Vue ecosystem requirement | Nuxt |
-| React ecosystem requirement | Astro + React or Next.js |
-| Highly interactive apps | Next.js or Nuxt |
+| Use Case | Recommended Framework | JS Bundle |
+|----------|----------------------|-----------|
+| Content sites with forms/carousels | **Astro + Svelte** | ~21 KB gzip |
+| Marketing sites (Vue ecosystem) | **Astro + Vue** | ~42 KB gzip |
+| Marketing sites (React ecosystem) | **Astro + React** | ~58 KB gzip |
+| Apps needing Vue full features | **Nuxt** | ~79 KB gzip |
+| Apps needing React full features | **Next.js** | ~218 KB gzip |
+
+---
+
+## How to Run Benchmarks
+
+```bash
+# Build all apps
+cd astro-vue-app && npm run build
+cd ../astro-react-app && npm run build
+cd ../astro-svelte-app && npm run build
+cd ../nuxt-app && npm run build
+cd ../nextjs-app && npm run build
+
+# Measure JS bundle size
+find dist/_astro -name "*.js" -exec cat {} + | wc -c        # Astro apps
+find .output/public/_nuxt -name "*.js" -exec cat {} + | wc -c  # Nuxt
+find out/_next/static -name "*.js" -exec cat {} + | wc -c      # Next.js
+```
 
 ---
 
 ## Conclusion
 
-**Astro with Svelte** delivers the best performance for landing pages with interactive components, shipping only ~30KB of JavaScript.
+**Astro with Svelte** delivers the best performance for landing pages with interactive components, shipping only **21 KB (gzip) of JavaScript** - a **90% reduction** compared to Next.js.
 
 **Astro's islands architecture** is the key differentiator - it allows mixing static and interactive content without shipping unnecessary JavaScript for static parts.
 
-**Next.js and Nuxt** are better suited for highly interactive applications where full framework capabilities are needed, but come with larger bundle sizes.
+For the same 12 interactive components:
+- **Astro + Svelte**: 21 KB gzip
+- **Astro + Vue**: 42 KB gzip
+- **Astro + React**: 58 KB gzip
+- **Nuxt**: 79 KB gzip
+- **Next.js**: 218 KB gzip
+
+**Next.js and Nuxt** are better suited for highly interactive applications where full framework capabilities are needed across the entire page, but come with significantly larger bundle sizes.
