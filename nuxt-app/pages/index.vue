@@ -35,14 +35,26 @@ const cards = [
 
       <StatsCounter />
 
+      <SearchBox />
+
+      <Tabs />
+
       <TestimonialCarousel />
 
+      <PricingToggle />
+
+      <ImageLightbox />
+
       <FaqAccordion />
+
+      <Modal />
 
       <ContactForm />
     </main>
 
     <AppFooter />
+
+    <CookieBanner />
 
     <BackToTop />
   </div>

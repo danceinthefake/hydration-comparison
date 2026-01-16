@@ -8,6 +8,12 @@ import TestimonialCarousel from '../components/TestimonialCarousel.vue';
 import StatsCounter from '../components/StatsCounter.vue';
 import ContactForm from '../components/ContactForm.vue';
 import BackToTop from '../components/BackToTop.vue';
+import Modal from '../components/Modal.vue';
+import Tabs from '../components/Tabs.vue';
+import ImageLightbox from '../components/ImageLightbox.vue';
+import CookieBanner from '../components/CookieBanner.vue';
+import PricingToggle from '../components/PricingToggle.vue';
+import SearchBox from '../components/SearchBox.vue';
 
 const cards = [
   { title: 'Fast Performance', description: 'Server-side rendering delivers content quickly to users with zero JavaScript overhead.' },
@@ -37,14 +43,26 @@ const cards = [
 
     <StatsCounter client:visible />
 
+    <SearchBox client:visible />
+
+    <Tabs client:visible />
+
     <TestimonialCarousel client:visible />
 
+    <PricingToggle client:visible />
+
+    <ImageLightbox client:visible />
+
     <FaqAccordion client:visible />
+
+    <Modal client:load />
 
     <ContactForm client:visible />
   </main>
 
   <Footer />
+
+  <CookieBanner client:load />
 
   <BackToTop client:load />
 </Layout>

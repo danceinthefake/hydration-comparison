@@ -8,6 +8,12 @@ import TestimonialCarousel from '../components/TestimonialCarousel.tsx';
 import StatsCounter from '../components/StatsCounter.tsx';
 import ContactForm from '../components/ContactForm.tsx';
 import BackToTop from '../components/BackToTop.tsx';
+import Modal from '../components/Modal.tsx';
+import Tabs from '../components/Tabs.tsx';
+import ImageLightbox from '../components/ImageLightbox.tsx';
+import CookieBanner from '../components/CookieBanner.tsx';
+import PricingToggle from '../components/PricingToggle.tsx';
+import SearchBox from '../components/SearchBox.tsx';
 
 const cards = [
   { title: 'Fast Performance', description: 'Server-side rendering delivers content quickly to users with zero JavaScript overhead.' },
@@ -37,14 +43,26 @@ const cards = [
 
     <StatsCounter client:visible />
 
+    <SearchBox client:visible />
+
+    <Tabs client:visible />
+
     <TestimonialCarousel client:visible />
 
+    <PricingToggle client:visible />
+
+    <ImageLightbox client:visible />
+
     <FaqAccordion client:visible />
+
+    <Modal client:load />
 
     <ContactForm client:visible />
   </main>
 
   <Footer />
+
+  <CookieBanner client:load />
 
   <BackToTop client:load />
 </Layout>

@@ -6,6 +6,12 @@ import TestimonialCarousel from '@/components/TestimonialCarousel';
 import StatsCounter from '@/components/StatsCounter';
 import ContactForm from '@/components/ContactForm';
 import BackToTop from '@/components/BackToTop';
+import Modal from '@/components/Modal';
+import Tabs from '@/components/Tabs';
+import ImageLightbox from '@/components/ImageLightbox';
+import CookieBanner from '@/components/CookieBanner';
+import PricingToggle from '@/components/PricingToggle';
+import SearchBox from '@/components/SearchBox';
 
 const cards = [
   { title: 'Fast Performance', description: 'Server-side rendering delivers content quickly to users with zero JavaScript overhead.' },
@@ -36,14 +42,26 @@ export default function Home() {
 
         <StatsCounter />
 
+        <SearchBox />
+
+        <Tabs />
+
         <TestimonialCarousel />
 
+        <PricingToggle />
+
+        <ImageLightbox />
+
         <FaqAccordion />
+
+        <Modal />
 
         <ContactForm />
       </main>
 
       <Footer />
+
+      <CookieBanner />
 
       <BackToTop />
     </div>

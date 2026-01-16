@@ -8,6 +8,12 @@ import TestimonialCarousel from '../components/TestimonialCarousel.svelte';
 import StatsCounter from '../components/StatsCounter.svelte';
 import ContactForm from '../components/ContactForm.svelte';
 import BackToTop from '../components/BackToTop.svelte';
+import Modal from '../components/Modal.svelte';
+import Tabs from '../components/Tabs.svelte';
+import ImageLightbox from '../components/ImageLightbox.svelte';
+import CookieBanner from '../components/CookieBanner.svelte';
+import PricingToggle from '../components/PricingToggle.svelte';
+import SearchBox from '../components/SearchBox.svelte';
 
 const cards = [
   { title: 'Fast Performance', description: 'Server-side rendering delivers content quickly to users with zero JavaScript overhead.' },
@@ -37,14 +43,26 @@ const cards = [
 
     <StatsCounter client:visible />
 
+    <SearchBox client:visible />
+
+    <Tabs client:visible />
+
     <TestimonialCarousel client:visible />
 
+    <PricingToggle client:visible />
+
+    <ImageLightbox client:visible />
+
     <FaqAccordion client:visible />
+
+    <Modal client:load />
 
     <ContactForm client:visible />
   </main>
 
   <Footer />
+
+  <CookieBanner client:load />
 
   <BackToTop client:load />
 </Layout>
