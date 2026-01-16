@@ -1,0 +1,116 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Card from '../components/Card.astro';
+import Footer from '../components/Footer.astro';
+import MobileNav from '../components/MobileNav.svelte';
+import FaqAccordion from '../components/FaqAccordion.svelte';
+import TestimonialCarousel from '../components/TestimonialCarousel.svelte';
+import StatsCounter from '../components/StatsCounter.svelte';
+import ContactForm from '../components/ContactForm.svelte';
+import BackToTop from '../components/BackToTop.svelte';
+
+const cards = [
+  { title: 'Fast Performance', description: 'Server-side rendering delivers content quickly to users with zero JavaScript overhead.' },
+  { title: 'SEO Friendly', description: 'Search engines can easily crawl and index your fully-rendered HTML content.' },
+  { title: 'Islands Architecture', description: 'Hydrate only interactive components while keeping static content as pure HTML.' },
+];
+---
+
+<Layout title="Astro + Svelte - Hydration Test">
+  <MobileNav siteName="Astro + Svelte" client:load />
+
+  <main>
+    <section id="home" class="hero">
+      <h1>Welcome to Astro</h1>
+      <p>Testing selective hydration with Svelte islands</p>
+      <a href="#features" class="cta-button">Explore Features</a>
+    </section>
+
+    <section id="features" class="cards">
+      <h2>Why Zero Hydration?</h2>
+      <div class="cards-grid">
+        {cards.map((card) => (
+          <Card title={card.title} description={card.description} />
+        ))}
+      </div>
+    </section>
+
+    <StatsCounter client:visible />
+
+    <TestimonialCarousel client:visible />
+
+    <FaqAccordion client:visible />
+
+    <ContactForm client:visible />
+  </main>
+
+  <Footer />
+
+  <BackToTop client:load />
+</Layout>
+
+<style>
+  main {
+    min-height: calc(100vh - 200px);
+  }
+
+  .hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-align: center;
+    padding: 6rem 2rem;
+  }
+
+  .hero h1 {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .hero p {
+    font-size: 1.25rem;
+    opacity: 0.9;
+    margin-bottom: 2rem;
+  }
+
+  .cta-button {
+    display: inline-block;
+    padding: 1rem 2rem;
+    background: white;
+    color: #667eea;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  .cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .cards {
+    padding: 4rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .cards h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    color: #1a1a2e;
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    .hero h1 {
+      font-size: 2.5rem;
+    }
+  }
+</style>

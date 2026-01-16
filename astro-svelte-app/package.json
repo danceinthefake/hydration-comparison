@@ -1,0 +1,17 @@
+{
+  "name": "astro-svelte-app",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "start": "astro preview",
+    "prod": "astro build && astro preview"
+  },
+  "dependencies": {
+    "astro": "^4.0.0",
+    "@astrojs/svelte": "^5.0.0",
+    "svelte": "^4.2.0"
+  }
+}
