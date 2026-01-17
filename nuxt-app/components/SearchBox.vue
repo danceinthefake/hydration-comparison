@@ -1,59 +1,77 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, watch } from 'vue';
+
+interface Pokemon {
+  name: string;
+  url: string;
+}
 
 const searchQuery = ref('');
 const isSearching = ref(false);
 const showResults = ref(false);
-
-const allItems = [
-  { id: 1, title: 'Getting Started Guide', category: 'Documentation', description: 'Learn the basics of our platform' },
-  { id: 2, title: 'API Reference', category: 'Documentation', description: 'Complete API documentation' },
-  { id: 3, title: 'Authentication', category: 'Security', description: 'Secure your application with OAuth' },
-  { id: 4, title: 'Billing & Payments', category: 'Account', description: 'Manage your subscription and invoices' },
-  { id: 5, title: 'Team Management', category: 'Features', description: 'Add and manage team members' },
-  { id: 6, title: 'Integrations', category: 'Features', description: 'Connect with third-party services' },
-  { id: 7, title: 'Analytics Dashboard', category: 'Features', description: 'Track your performance metrics' },
-  { id: 8, title: 'Webhooks', category: 'Documentation', description: 'Real-time event notifications' },
-  { id: 9, title: 'Rate Limiting', category: 'Security', description: 'Understand API rate limits' },
-  { id: 10, title: 'Data Export', category: 'Account', description: 'Export your data in various formats' },
-];
+const pokemonList = ref<Pokemon[]>([]);
+const filteredResults = ref<Pokemon[]>([]);
+const error = ref('');
 
 let debounceTimer: ReturnType<typeof setTimeout>;
 
-const filteredResults = computed(() => {
-  if (!searchQuery.value.trim()) return [];
-  const query = searchQuery.value.toLowerCase();
-  return allItems.filter(item =>
-    item.title.toLowerCase().includes(query) ||
-    item.category.toLowerCase().includes(query) ||
-    item.description.toLowerCase().includes(query)
-  );
-});
+// Fetch Pokemon list on mount
+const fetchPokemonList = async () => {
+  try {
+    const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=151');
+    const data = await response.json();
+    pokemonList.value = data.results;
+  } catch (e) {
+    error.value = 'Failed to load Pokemon list';
+  }
+};
+
+fetchPokemonList();
 
 watch(searchQuery, (newVal) => {
   isSearching.value = true;
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
     isSearching.value = false;
-    showResults.value = newVal.length > 0;
+    if (newVal.trim()) {
+      const query = newVal.toLowerCase();
+      filteredResults.value = pokemonList.value.filter(pokemon =>
+        pokemon.name.toLowerCase().includes(query)
+      ).slice(0, 10);
+      showResults.value = true;
+    } else {
+      filteredResults.value = [];
+      showResults.value = false;
+    }
   }, 300);
 });
 
 const clearSearch = () => {
   searchQuery.value = '';
   showResults.value = false;
+  filteredResults.value = [];
 };
 
-const selectResult = (item: typeof allItems[0]) => {
-  alert(`Selected: ${item.title}`);
-  clearSearch();
+const selectPokemon = (pokemon: Pokemon) => {
+  navigateTo(`/pokemon/${pokemon.name}`);
+};
+
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Enter' && filteredResults.value.length > 0) {
+    selectPokemon(filteredResults.value[0]);
+  }
+};
+
+const getPokemonId = (url: string) => {
+  const parts = url.split('/');
+  return parts[parts.length - 2];
 };
 </script>
 
 <template>
   <section class="search-section">
-    <h2>Search Our Knowledge Base</h2>
-    <p>Find answers to your questions quickly</p>
+    <h2>Search Pokemon</h2>
+    <p>Find your favorite Pokemon from the first generation</p>
 
     <div class="search-container">
       <div class="search-input-wrapper">
@@ -64,9 +82,10 @@ const selectResult = (item: typeof allItems[0]) => {
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Search for documentation, features, guides..."
+          placeholder="Search Pokemon by name..."
           class="search-input"
-          @focus="showResults = searchQuery.length > 0"
+          @focus="showResults = searchQuery.length > 0 && filteredResults.length > 0"
+          @keydown="handleKeydown"
         />
         <div v-if="isSearching" class="search-spinner"></div>
         <button v-else-if="searchQuery" class="clear-btn" @click="clearSearch">&times;</button>
@@ -74,28 +93,32 @@ const selectResult = (item: typeof allItems[0]) => {
 
       <div v-if="showResults" class="search-results">
         <div v-if="filteredResults.length === 0" class="no-results">
-          No results found for "{{ searchQuery }}"
+          No Pokemon found for "{{ searchQuery }}"
         </div>
         <button
-          v-for="item in filteredResults"
-          :key="item.id"
+          v-for="pokemon in filteredResults"
+          :key="pokemon.name"
           class="result-item"
-          @click="selectResult(item)"
+          @click="selectPokemon(pokemon)"
         >
           <div class="result-content">
-            <span class="result-title">{{ item.title }}</span>
-            <span class="result-description">{{ item.description }}</span>
+            <img
+              :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${getPokemonId(pokemon.url)}.png`"
+              :alt="pokemon.name"
+              class="pokemon-sprite"
+            />
+            <span class="result-title">{{ pokemon.name }}</span>
           </div>
-          <span class="result-category">{{ item.category }}</span>
+          <span class="result-id">#{{ getPokemonId(pokemon.url).padStart(3, '0') }}</span>
         </button>
       </div>
     </div>
 
     <div class="popular-searches">
       <span>Popular:</span>
-      <button @click="searchQuery = 'API'">API</button>
-      <button @click="searchQuery = 'Authentication'">Authentication</button>
-      <button @click="searchQuery = 'Billing'">Billing</button>
+      <button @click="searchQuery = 'pikachu'">Pikachu</button>
+      <button @click="searchQuery = 'charizard'">Charizard</button>
+      <button @click="searchQuery = 'mewtwo'">Mewtwo</button>
     </div>
   </section>
 </template>
@@ -204,7 +227,7 @@ const selectResult = (item: typeof allItems[0]) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1.5rem;
   background: none;
   border: none;
   border-bottom: 1px solid #f0f0f0;
@@ -223,27 +246,30 @@ const selectResult = (item: typeof allItems[0]) => {
 
 .result-content {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pokemon-sprite {
+  width: 50px;
+  height: 50px;
+  image-rendering: pixelated;
 }
 
 .result-title {
   font-weight: 600;
   color: #1a1a2e;
+  text-transform: capitalize;
+  font-size: 1.1rem;
 }
 
-.result-description {
-  font-size: 0.85rem;
-  color: #666;
-}
-
-.result-category {
-  font-size: 0.75rem;
+.result-id {
+  font-size: 0.9rem;
   padding: 0.25rem 0.75rem;
   background: #f0f0f0;
   border-radius: 20px;
   color: #666;
-  white-space: nowrap;
+  font-family: monospace;
 }
 
 .popular-searches {

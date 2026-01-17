@@ -1,0 +1,199 @@
+.pokemonPage {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  padding: 2rem;
+}
+
+.backLink {
+  display: inline-block;
+  color: white;
+  text-decoration: none;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+  opacity: 0.8;
+  transition: opacity 0.3s;
+}
+
+.backLink:hover {
+  opacity: 1;
+}
+
+.pokemonCard {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.pokemonHeader {
+  padding: 2rem;
+  text-align: center;
+  color: white;
+}
+
+.pokemonId {
+  font-size: 1.2rem;
+  opacity: 0.8;
+  font-family: monospace;
+}
+
+.pokemonName {
+  font-size: 3rem;
+  text-transform: capitalize;
+  margin: 0.5rem 0;
+}
+
+.pokemonTypes {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.typeBadge {
+  padding: 0.5rem 1.5rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  text-transform: capitalize;
+  font-weight: 500;
+}
+
+.pokemonImageContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: -60px;
+  position: relative;
+  z-index: 10;
+}
+
+.pokemonImage {
+  width: 250px;
+  height: 250px;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
+}
+
+.pokemonInfo {
+  padding: 2rem;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.infoItem {
+  text-align: center;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.infoLabel {
+  display: block;
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.infoValue {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  color: #1a1a2e;
+  margin: 2rem 0 1rem;
+}
+
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.statRow {
+  display: grid;
+  grid-template-columns: 120px 1fr 50px;
+  align-items: center;
+  gap: 1rem;
+}
+
+.statName {
+  text-transform: capitalize;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.statBarContainer {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.statBar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.statValue {
+  font-weight: 600;
+  color: #1a1a2e;
+  text-align: right;
+}
+
+.abilities {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.abilityBadge {
+  padding: 0.5rem 1rem;
+  background: #f0f0f0;
+  border-radius: 8px;
+  text-transform: capitalize;
+  font-size: 0.9rem;
+}
+
+.hiddenLabel {
+  font-size: 0.75rem;
+  color: #666;
+  margin-left: 0.25rem;
+}
+
+.sprites {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.sprites img {
+  width: 96px;
+  height: 96px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  image-rendering: pixelated;
+}
+
+@media (max-width: 600px) {
+  .pokemonName {
+    font-size: 2rem;
+  }
+
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .statRow {
+    grid-template-columns: 100px 1fr 40px;
+  }
+}

@@ -1,63 +1,75 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 
-const allItems = [
-  { id: 1, title: 'Getting Started Guide', category: 'Documentation', description: 'Learn the basics of our platform' },
-  { id: 2, title: 'API Reference', category: 'Documentation', description: 'Complete API documentation' },
-  { id: 3, title: 'Authentication', category: 'Security', description: 'Secure your application with OAuth' },
-  { id: 4, title: 'Billing & Payments', category: 'Account', description: 'Manage your subscription and invoices' },
-  { id: 5, title: 'Team Management', category: 'Features', description: 'Add and manage team members' },
-  { id: 6, title: 'Integrations', category: 'Features', description: 'Connect with third-party services' },
-  { id: 7, title: 'Analytics Dashboard', category: 'Features', description: 'Track your performance metrics' },
-  { id: 8, title: 'Webhooks', category: 'Documentation', description: 'Real-time event notifications' },
-  { id: 9, title: 'Rate Limiting', category: 'Security', description: 'Understand API rate limits' },
-  { id: 10, title: 'Data Export', category: 'Account', description: 'Export your data in various formats' },
-];
+interface Pokemon {
+  name: string;
+  url: string;
+}
 
 export default function SearchBox() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [pokemonList, setPokemonList] = useState<Pokemon[]>([]);
+  const [filteredResults, setFilteredResults] = useState<Pokemon[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const filteredResults = searchQuery.trim()
-    ? allItems.filter(item =>
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : [];
+  useEffect(() => {
+    fetch('https://pokeapi.co/api/v2/pokemon?limit=151')
+      .then(res => res.json())
+      .then(data => setPokemonList(data.results))
+      .catch(console.error);
+  }, []);
 
   useEffect(() => {
-    if (searchQuery) {
+    if (searchQuery.trim()) {
       setIsSearching(true);
       clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
+        const query = searchQuery.toLowerCase();
+        const results = pokemonList.filter(pokemon =>
+          pokemon.name.toLowerCase().includes(query)
+        ).slice(0, 10);
+        setFilteredResults(results);
         setIsSearching(false);
-        setShowResults(searchQuery.length > 0);
+        setShowResults(true);
       }, 300);
     } else {
+      setFilteredResults([]);
       setShowResults(false);
     }
 
     return () => clearTimeout(debounceRef.current);
-  }, [searchQuery]);
+  }, [searchQuery, pokemonList]);
 
   const clearSearch = () => {
     setSearchQuery('');
     setShowResults(false);
+    setFilteredResults([]);
   };
 
-  const selectResult = (item: typeof allItems[0]) => {
-    alert(`Selected: ${item.title}`);
-    clearSearch();
+  const selectPokemon = (pokemon: Pokemon) => {
+    router.push(`/pokemon/${pokemon.name}`);
+  };
+
+  const handleKeydown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && filteredResults.length > 0) {
+      selectPokemon(filteredResults[0]);
+    }
+  };
+
+  const getPokemonId = (url: string) => {
+    const parts = url.split('/');
+    return parts[parts.length - 2];
   };
 
   return (
     <section className="search-section">
-      <h2>Search Our Knowledge Base</h2>
-      <p>Find answers to your questions quickly</p>
+      <h2>Search Pokemon</h2>
+      <p>Find your favorite Pokemon from the first generation</p>
 
       <div className="search-container">
         <div className="search-input-wrapper">
@@ -69,9 +81,10 @@ export default function SearchBox() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             type="text"
-            placeholder="Search for documentation, features, guides..."
+            placeholder="Search Pokemon by name..."
             className="search-input"
-            onFocus={() => setShowResults(searchQuery.length > 0)}
+            onFocus={() => setShowResults(searchQuery.length > 0 && filteredResults.length > 0)}
+            onKeyDown={handleKeydown}
           />
           {isSearching ? (
             <div className="search-spinner"></div>
@@ -83,19 +96,23 @@ export default function SearchBox() {
         {showResults && (
           <div className="search-results">
             {filteredResults.length === 0 ? (
-              <div className="no-results">No results found for &quot;{searchQuery}&quot;</div>
+              <div className="no-results">No Pokemon found for &quot;{searchQuery}&quot;</div>
             ) : (
-              filteredResults.map((item) => (
+              filteredResults.map((pokemon) => (
                 <button
-                  key={item.id}
+                  key={pokemon.name}
                   className="result-item"
-                  onClick={() => selectResult(item)}
+                  onClick={() => selectPokemon(pokemon)}
                 >
                   <div className="result-content">
-                    <span className="result-title">{item.title}</span>
-                    <span className="result-description">{item.description}</span>
+                    <img
+                      src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${getPokemonId(pokemon.url)}.png`}
+                      alt={pokemon.name}
+                      className="pokemon-sprite"
+                    />
+                    <span className="result-title">{pokemon.name}</span>
                   </div>
-                  <span className="result-category">{item.category}</span>
+                  <span className="result-id">#{getPokemonId(pokemon.url).padStart(3, '0')}</span>
                 </button>
               ))
             )}
@@ -105,9 +122,9 @@ export default function SearchBox() {
 
       <div className="popular-searches">
         <span>Popular:</span>
-        <button onClick={() => setSearchQuery('API')}>API</button>
-        <button onClick={() => setSearchQuery('Authentication')}>Authentication</button>
-        <button onClick={() => setSearchQuery('Billing')}>Billing</button>
+        <button onClick={() => setSearchQuery('pikachu')}>Pikachu</button>
+        <button onClick={() => setSearchQuery('charizard')}>Charizard</button>
+        <button onClick={() => setSearchQuery('mewtwo')}>Mewtwo</button>
       </div>
 
       <style jsx>{`
@@ -214,7 +231,7 @@ export default function SearchBox() {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 1rem 1.5rem;
+          padding: 0.75rem 1.5rem;
           background: none;
           border: none;
           border-bottom: 1px solid #f0f0f0;
@@ -233,27 +250,30 @@ export default function SearchBox() {
 
         .result-content {
           display: flex;
-          flex-direction: column;
-          gap: 0.25rem;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        .pokemon-sprite {
+          width: 50px;
+          height: 50px;
+          image-rendering: pixelated;
         }
 
         .result-title {
           font-weight: 600;
           color: #1a1a2e;
+          text-transform: capitalize;
+          font-size: 1.1rem;
         }
 
-        .result-description {
-          font-size: 0.85rem;
-          color: #666;
-        }
-
-        .result-category {
-          font-size: 0.75rem;
+        .result-id {
+          font-size: 0.9rem;
           padding: 0.25rem 0.75rem;
           background: #f0f0f0;
           border-radius: 20px;
           color: #666;
-          white-space: nowrap;
+          font-family: monospace;
         }
 
         .popular-searches {
