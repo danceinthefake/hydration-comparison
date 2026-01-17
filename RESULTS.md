@@ -298,6 +298,97 @@ Server Components reduce component-level hydration, but:
 
 ---
 
+## Admin Page Analysis (Complex Reactivity)
+
+This section tests the frameworks with a **complex admin panel** that requires shared state across multiple features:
+
+### Admin Panel Features
+
+- Data table with 151 Pokemon from PokeAPI
+- Search with debounced input
+- Multi-select type filters (18 types)
+- Sorting by ID, name, HP, attack, defense, speed
+- Pagination with configurable items per page
+- Bulk selection with checkboxes
+- Selected Pokemon stats summary (computed values)
+- Export to CSV functionality
+- Table/Grid view toggle
+
+### Admin Page JavaScript Size
+
+| App | Admin Component | Runtime | Total Gzip |
+|-----|-----------------|---------|------------|
+| **astro-svelte-app** | 8.9 KB | 2.9 KB | **~12 KB** |
+| **astro-vue-app** | 3.8 KB | 33.5 KB | **~37 KB** |
+| **astro-react-app** | 4.4 KB | 46.4 KB | **~50 KB** |
+| **nuxt-app** | N/A | Full bundle | **~92 KB** |
+| **nextjs-app** | ~12 KB | Full bundle | **~100 KB** |
+
+### Key Insight: Astro's Islands Limitation
+
+**For complex admin UIs, Astro requires a single large island component.**
+
+```astro
+<!-- Astro admin.astro -->
+<!--
+  In Astro, islands are ISOLATED - they cannot share state.
+  For admin UIs with shared state (search, filters, table, selection),
+  we must use ONE large island component.
+-->
+<AdminPanel client:load />
+```
+
+**Why?** Astro islands:
+- Each island has its own isolated JavaScript context
+- Cannot share state with other islands
+- Cannot use Vue/React context across islands
+- Best suited for independent interactive components
+
+**Nuxt/Next.js advantage for admin UIs:**
+```vue
+<!-- Nuxt: Components naturally share state -->
+<SearchBox />           <!-- Can access shared store -->
+<TypeFilters />         <!-- Can access shared store -->
+<PokemonTable />        <!-- Can access shared store -->
+<SelectionSummary />    <!-- Can access shared store -->
+```
+
+### Component Size Comparison
+
+Even for complex admin panels, **Svelte's compiled output is smallest**:
+
+| Framework | Component Code | Runtime | Total |
+|-----------|---------------|---------|-------|
+| Svelte | 26.8 KB | 7.0 KB | **33.8 KB** |
+| Vue | 10.3 KB | 83.6 KB | **93.9 KB** |
+| React | 17.2 KB | 142.3 KB | **159.5 KB** |
+
+**Svelte's approach**: Reactivity compiles into the component itself, resulting in:
+- Larger component files (includes all reactive logic)
+- Tiny runtime (just hydration glue)
+- Smallest total bundle
+
+### Admin Page Trade-offs
+
+| Approach | Pros | Cons |
+|----------|------|------|
+| **Astro + Svelte** | Smallest bundle (~12 KB gzip) | Complex state = single large component |
+| **Astro + Vue** | Good balance (~37 KB gzip) | Islands cannot share Vue context |
+| **Astro + React** | Familiar React (~50 KB gzip) | Islands cannot share React context |
+| **Nuxt** | Natural state sharing | Larger bundle (~92 KB gzip) |
+| **Next.js** | Full React ecosystem | Largest bundle (~100 KB gzip) |
+
+### When to Use Each
+
+| Scenario | Best Choice |
+|----------|-------------|
+| Admin panel with complex shared state | **Nuxt** or **Next.js** (natural state sharing) |
+| Admin panel where bundle size critical | **Astro + Svelte** (single island) |
+| Simple dashboards | **Astro** with separate islands |
+| Full-featured web apps | **Nuxt** or **Next.js** |
+
+---
+
 ## How to Run Benchmarks
 
 ```bash
@@ -321,15 +412,31 @@ find dist/_astro -name "*.js" -exec cat {} + | gzip | wc -c   # Astro apps
 
 ## Conclusion
 
-**Astro with Svelte** delivers the best performance, shipping only **21 KB (gzip) of JavaScript** on the home page and **zero JavaScript** on Pokemon detail pages - a **90% reduction** compared to Next.js.
+**Astro with Svelte** delivers the best performance, shipping only **21 KB (gzip) of JavaScript** on the home page, **zero JavaScript** on Pokemon detail pages, and **~12 KB** on complex admin pages - a **90% reduction** compared to Next.js.
 
 ### Per-Page Summary
 
-| Page Type | Astro + Svelte | Nuxt | Next.js |
-|-----------|----------------|------|---------|
-| Home (12 components) | 21 KB | 75 KB | 140 KB |
-| Pokemon Detail (static) | **0 KB** | 75 KB | 134 KB |
+| Page Type | Astro + Svelte | Astro + Vue | Nuxt | Next.js |
+|-----------|----------------|-------------|------|---------|
+| Home (12 components) | 21 KB | 42 KB | 75 KB | 140 KB |
+| Pokemon Detail (static) | **0 KB** | **0 KB** | 75 KB | 134 KB |
+| Admin (complex state) | **12 KB** | 37 KB | 92 KB | 100 KB |
 
-**Key Takeaway**: If your site has static content pages (blogs, documentation, product pages), **Astro's islands architecture** delivers massive JavaScript savings by shipping zero JS for those pages.
+### Key Takeaways
 
-**Nuxt and Next.js** are better suited for highly interactive applications where every page needs full framework reactivity, but they come with a baseline JavaScript cost that applies to every page, even static ones.
+1. **For static content pages** (blogs, documentation, product pages): **Astro's islands architecture** delivers massive JavaScript savings by shipping zero JS.
+
+2. **For complex interactive pages** (admin panels, dashboards): **Astro still wins on bundle size**, but requires bundling shared state into a single island component.
+
+3. **For full-featured web apps** where development experience matters more than bundle size: **Nuxt or Next.js** provide natural state sharing across components.
+
+### The Astro Islands Trade-off
+
+| Scenario | Astro | Nuxt/Next.js |
+|----------|-------|--------------|
+| Multiple independent interactive components | Easy (multiple islands) | Standard |
+| Complex shared state across components | Harder (single large island) | Natural |
+| Static content pages | **Zero JS** | Always loads runtime |
+| Bundle size | Smallest | Larger |
+
+**Bottom Line**: Choose Astro for content-heavy sites with occasional interactivity. Choose Nuxt/Next.js for application-heavy sites where every page needs complex reactivity.

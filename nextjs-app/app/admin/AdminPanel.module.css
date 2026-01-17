@@ -1,0 +1,402 @@
+.adminPanel {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.adminHeader {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.adminHeader h1 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.subtitle {
+  color: #666;
+  margin: 0;
+}
+
+.controls {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.searchBox {
+  flex: 1;
+  min-width: 200px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #4a90d9;
+}
+
+.viewToggle {
+  display: flex;
+  gap: 0;
+}
+
+.toggleBtn {
+  padding: 10px 20px;
+  border: 2px solid #4a90d9;
+  background: white;
+  color: #4a90d9;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggleBtn:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+.toggleBtn:last-child {
+  border-radius: 0 8px 8px 0;
+}
+
+.toggleBtn.active {
+  background: #4a90d9;
+  color: white;
+}
+
+.typeFilters {
+  margin-bottom: 20px;
+}
+
+.filterLabel {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #333;
+}
+
+.typeButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.typeBtn {
+  padding: 6px 12px;
+  border: 2px solid;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  transition: all 0.2s;
+}
+
+.typeBtn:hover {
+  transform: scale(1.05);
+}
+
+.selectionActions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.actionBtn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #e0e0e0;
+  color: #333;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.actionBtn:hover {
+  background: #d0d0d0;
+}
+
+.actionBtn.export {
+  background: #4caf50;
+  color: white;
+}
+
+.actionBtn.export:hover {
+  background: #43a047;
+}
+
+.actionBtn.export:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.selectedStats {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.selectedStats h3 {
+  margin: 0 0 15px 0;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 15px;
+}
+
+.statItem {
+  text-align: center;
+}
+
+.statLabel {
+  display: block;
+  font-size: 12px;
+  opacity: 0.9;
+  margin-bottom: 5px;
+}
+
+.statValue {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.loading {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #4a90d9;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error {
+  text-align: center;
+  padding: 40px;
+  color: #d32f2f;
+}
+
+.error button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.tableContainer {
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.pokemonTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.pokemonTable th,
+.pokemonTable td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.pokemonTable th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.pokemonTable th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.pokemonTable th.sortable:hover {
+  background: #e9ecef;
+}
+
+.checkboxCol {
+  width: 40px;
+  text-align: center;
+}
+
+.pokemonTable tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.pokemonTable tbody tr.selected {
+  background: #e3f2fd;
+}
+
+.sprite {
+  width: 50px;
+  height: 50px;
+  image-rendering: pixelated;
+}
+
+.nameCell {
+  text-transform: capitalize;
+}
+
+.nameCell a {
+  color: #4a90d9;
+  text-decoration: none;
+}
+
+.nameCell a:hover {
+  text-decoration: underline;
+}
+
+.typeBadge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+  margin-right: 4px;
+}
+
+.typeBadge.small {
+  padding: 2px 6px;
+  font-size: 10px;
+}
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.gridCard {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+
+.gridCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.gridCard.selected {
+  border: 3px solid #4a90d9;
+  background: #e3f2fd;
+}
+
+.cardCheckbox {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
+.cardSprite {
+  width: 96px;
+  height: 96px;
+  image-rendering: pixelated;
+}
+
+.cardName {
+  margin: 10px 0;
+  text-transform: capitalize;
+}
+
+.cardName a {
+  color: #333;
+  text-decoration: none;
+}
+
+.cardName a:hover {
+  color: #4a90d9;
+}
+
+.cardTypes {
+  margin-bottom: 10px;
+}
+
+.cardStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  font-size: 11px;
+  color: #666;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.pageBtn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  background: #4a90d9;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background: #3a7bc8;
+}
+
+.pageBtn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.pageInfo {
+  color: #666;
+}
+
+.itemsSelect {
+  padding: 8px 12px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}

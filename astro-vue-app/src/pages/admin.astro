@@ -1,0 +1,29 @@
+---
+import Layout from '../layouts/Layout.astro';
+import AdminPanel from '../components/AdminPanel.vue';
+---
+
+<Layout title="Admin Panel - Pokemon Manager">
+  <!--
+    IMPORTANT: This entire admin panel is ONE large island component.
+
+    In Astro, islands are isolated - they cannot share state with each other.
+    For complex admin UIs where multiple components need to share state
+    (search, filters, table, selection), we must use a SINGLE island.
+
+    This is a key limitation of Astro's islands architecture:
+    - Simple interactivity: Multiple small islands work great
+    - Complex shared state: Requires one large island
+
+    Compare this to Nuxt/Next.js where all components can share state
+    through Vue/React's context or state management.
+  -->
+  <AdminPanel client:load />
+</Layout>
+
+<style is:global>
+  body {
+    margin: 0;
+    padding: 0;
+  }
+</style>
