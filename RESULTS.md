@@ -440,3 +440,330 @@ find dist/_astro -name "*.js" -exec cat {} + | gzip | wc -c   # Astro apps
 | Bundle size | Smallest | Larger |
 
 **Bottom Line**: Choose Astro for content-heavy sites with occasional interactivity. Choose Nuxt/Next.js for application-heavy sites where every page needs complex reactivity.
+
+---
+
+## E-commerce Recommendation (WooCommerce Replacement)
+
+If you're looking to replace WooCommerce with a modern JavaScript framework, here's our comprehensive analysis based on the benchmark results.
+
+### E-commerce Requirements
+
+A complete e-commerce platform needs:
+
+| Feature | Description | State Complexity |
+|---------|-------------|------------------|
+| Product catalog | Browse products by category | Low (static) |
+| Product detail | View product info, images, variants | Low (static) |
+| Search | Find products with filters | Medium |
+| Shopping cart | Add/remove items, persist across pages | **High (shared state)** |
+| Wishlist | Save products for later | Medium |
+| Checkout | Multi-step form, payment integration | **High (complex forms)** |
+| User accounts | Login, register, order history | **High (auth state)** |
+| Admin panel | Inventory, orders, customers CRUD | **High (complex state)** |
+
+---
+
+### Framework Comparison for E-commerce
+
+#### 1. Astro + Svelte
+
+| Aspect | Details |
+|--------|---------|
+| **Bundle Size** | ~12-21 KB gzip (smallest) |
+| **Product Pages** | 0 KB JS (pure static HTML) |
+| **Admin Page** | ~12 KB gzip |
+
+**Pros:**
+- Smallest JavaScript bundle by far
+- Product pages load instantly (0 KB JS)
+- Excellent Core Web Vitals scores
+- Best for SEO on product pages
+- Svelte compiles away runtime overhead
+
+**Cons:**
+- **Islands cannot share state** - cart in header can't communicate with add-to-cart button
+- Need workarounds for cart persistence (localStorage + custom events)
+- Smaller ecosystem, fewer e-commerce integrations
+- Team needs to learn Svelte
+- Complex checkout flow requires single large component
+- No built-in auth solution
+
+**E-commerce Workarounds Required:**
+```javascript
+// Cart state sharing between islands requires manual sync
+// Island 1: Add to Cart button
+localStorage.setItem('cart', JSON.stringify(cart));
+window.dispatchEvent(new CustomEvent('cart-updated'));
+
+// Island 2: Cart icon in header
+window.addEventListener('cart-updated', () => {
+  cart = JSON.parse(localStorage.getItem('cart'));
+});
+```
+
+**Verdict:** Best performance, but significant architectural complexity for e-commerce shared state.
+
+---
+
+#### 2. Astro + Vue
+
+| Aspect | Details |
+|--------|---------|
+| **Bundle Size** | ~37-42 KB gzip |
+| **Product Pages** | 0 KB JS (pure static HTML) |
+| **Admin Page** | ~37 KB gzip |
+
+**Pros:**
+- Zero JS on static product pages
+- Vue's familiar reactivity model
+- Smaller than React runtime
+- Good performance vs full hydration frameworks
+- Can use Vue ecosystem libraries within islands
+
+**Cons:**
+- **Islands still cannot share Vue context/Pinia store**
+- Same cart state sharing problem as Astro + Svelte
+- Vue runtime (~33 KB) loaded per island group
+- Need workarounds for global state
+- No built-in routing for SPA-like navigation
+
+**Verdict:** Good balance, but still has islands state sharing limitation.
+
+---
+
+#### 3. Astro + React
+
+| Aspect | Details |
+|--------|---------|
+| **Bundle Size** | ~50-58 KB gzip |
+| **Product Pages** | 0 KB JS (pure static HTML) |
+| **Admin Page** | ~50 KB gzip |
+
+**Pros:**
+- Zero JS on static product pages
+- Largest ecosystem (most UI libraries, payment integrations)
+- Team likely already knows React
+- Many e-commerce components available
+
+**Cons:**
+- **Islands cannot share React context**
+- Largest runtime among Astro options (~46 KB)
+- Same state sharing workarounds needed
+- React's bundle size negates some Astro benefits
+- No built-in auth, need third-party solutions
+
+**Verdict:** Familiar ecosystem but largest Astro bundle, still has islands limitation.
+
+---
+
+#### 4. Nuxt 3
+
+| Aspect | Details |
+|--------|---------|
+| **Bundle Size** | ~75-92 KB gzip |
+| **Product Pages** | ~75 KB gzip (same as all pages) |
+| **Admin Page** | ~92 KB gzip |
+
+**Pros:**
+- **Natural state sharing across ALL components** (Pinia, composables)
+- Cart state works everywhere without workarounds
+- Built-in routing with automatic code splitting
+- Excellent SSR/SSG for SEO
+- Good e-commerce integrations (Medusa, Saleor, Shopify Storefront API)
+- Built-in useFetch for API calls
+- Middleware for auth protection
+- **46% smaller than Next.js**
+- Vue's intuitive reactivity for complex forms
+- Nuxt DevTools for debugging
+- Simpler mental model than React Server Components
+
+**Cons:**
+- Same JS bundle loads on every page (no 0 KB pages)
+- Larger than Astro options
+- Smaller ecosystem than React/Next.js
+- Fewer developers know Vue vs React
+
+**Cart state sharing (natural):**
+```vue
+<!-- Header component -->
+<template>
+  <span>Cart: {{ cartStore.itemCount }}</span>
+</template>
+<script setup>
+const cartStore = useCartStore(); // Just works everywhere
+</script>
+
+<!-- Product page -->
+<template>
+  <button @click="cartStore.addItem(product)">Add to Cart</button>
+</template>
+<script setup>
+const cartStore = useCartStore(); // Same store, shared state
+</script>
+```
+
+**Verdict:** Best balance of performance, developer experience, and e-commerce suitability.
+
+---
+
+#### 5. Next.js 14
+
+| Aspect | Details |
+|--------|---------|
+| **Bundle Size** | ~100-140 KB gzip |
+| **Product Pages** | ~134 KB gzip |
+| **Admin Page** | ~100 KB gzip |
+
+**Pros:**
+- **Largest ecosystem** - most e-commerce solutions available
+- Vercel's e-commerce templates (Shopify, Swell, BigCommerce)
+- Server Components reduce some hydration
+- Built-in image optimization
+- Excellent TypeScript support
+- Most developers know React
+- Vercel deployment is seamless
+- Built-in API routes for backend
+
+**Cons:**
+- **Largest JavaScript bundle** (87% larger than Nuxt)
+- Server Components add mental complexity
+- 'use client' vs server component decisions
+- Hydration mismatch errors common
+- Still loads ~134 KB on static product pages
+- More complex than Nuxt for same features
+
+**Verdict:** Best ecosystem but largest bundle and added complexity.
+
+---
+
+### Side-by-Side Comparison
+
+| Criteria | Astro+Svelte | Astro+Vue | Astro+React | Nuxt | Next.js |
+|----------|--------------|-----------|-------------|------|---------|
+| **Product Page JS** | 0 KB | 0 KB | 0 KB | 75 KB | 134 KB |
+| **Admin Page JS** | 12 KB | 37 KB | 50 KB | 92 KB | 100 KB |
+| **Cart State Sharing** | ❌ Workaround | ❌ Workaround | ❌ Workaround | ✅ Natural | ✅ Natural |
+| **Checkout Complexity** | Hard | Hard | Hard | Easy | Easy |
+| **Auth Integration** | Manual | Manual | Manual | Built-in | Built-in |
+| **E-commerce Ecosystem** | Limited | Limited | Good | Good | Best |
+| **Learning Curve** | High | Medium | Medium | Low | Medium |
+| **Deployment** | Simple | Simple | Simple | Simple | Simple |
+| **SEO** | Excellent | Excellent | Excellent | Excellent | Excellent |
+| **Core Web Vitals** | Best | Great | Good | Good | Average |
+
+---
+
+### The Critical E-commerce Problem: Shared Cart State
+
+This is why Astro struggles for e-commerce:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  HEADER (Island 1)                                          │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  Logo    Search    [Cart Icon: 3 items]  [Account]  │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                           ↑                                 │
+│                    How does this                            │
+│                    know about items?                        │
+│                           ↓                                 │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  PRODUCT CARD (Island 2)                             │   │
+│  │  ┌─────────┐                                         │   │
+│  │  │  Image  │  Product Name                           │   │
+│  │  │         │  $99.00                                 │   │
+│  │  └─────────┘  [Add to Cart] ← Adds item              │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  ❌ In Astro: These islands CANNOT share state directly     │
+│  ✅ In Nuxt/Next: Components naturally share store/context  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Final Recommendation
+
+#### 🏆 **RECOMMENDED: Nuxt 3**
+
+**Strong Reasons:**
+
+1. **Natural State Sharing (Most Important)**
+   - Cart, wishlist, user session work across all components without workarounds
+   - No localStorage hacks or custom events needed
+   - Pinia stores are reactive everywhere
+   - This alone saves weeks of development time
+
+2. **46% Smaller Than Next.js**
+   - ~75 KB vs ~140 KB on product pages
+   - Significant performance advantage over main competitor
+   - Better Core Web Vitals = better SEO ranking
+
+3. **Simpler Mental Model**
+   - No Server Components vs Client Components confusion
+   - No 'use client' directives to manage
+   - No hydration mismatch debugging
+   - Vue's reactivity is more intuitive than React hooks
+
+4. **E-commerce Ready**
+   - Built-in useFetch for API calls
+   - Built-in middleware for auth guards
+   - Good integrations: Medusa, Saleor, Shopify Storefront API
+   - Auto-imports reduce boilerplate
+
+5. **Acceptable Bundle Size Trade-off**
+   - 75 KB loads in <100ms on 3G
+   - Cached after first page visit
+   - Users browse multiple pages anyway
+   - Performance difference imperceptible to users
+
+6. **Lower Development Cost**
+   - Single codebase
+   - Simple deployment
+   - Less architectural decisions
+   - Faster time to market
+
+#### When to Choose Others
+
+| Choose This | If You Have |
+|-------------|-------------|
+| **Astro + Svelte** | <100 products, minimal cart needs, performance-obsessed |
+| **Astro + Vue** | Mostly static catalog, cart on separate subdomain |
+| **Astro + React** | Static catalog + existing React component library |
+| **Next.js** | Must use React, need Vercel ecosystem, team knows React only |
+
+#### When NOT to Choose Nuxt
+
+- Team only knows React and won't learn Vue
+- Must integrate with Shopify Hydrogen (React-only)
+- Already have significant React codebase to reuse
+
+---
+
+### Summary Table
+
+| Framework | Bundle Size | State Sharing | E-commerce Ready | Recommendation |
+|-----------|-------------|---------------|------------------|----------------|
+| Astro+Svelte | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | Small static stores |
+| Astro+Vue | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | Static catalog only |
+| Astro+React | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | Static + React libs |
+| **Nuxt** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | **Most e-commerce** |
+| Next.js | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | React-only teams |
+
+---
+
+### Bottom Line
+
+**For WooCommerce replacement, use Nuxt 3.**
+
+The ~75 KB JavaScript overhead is a worthwhile trade-off for:
+- Natural cart/checkout state management
+- Simpler development experience
+- 46% smaller bundle than Next.js
+- Faster time to market
+- Lower long-term maintenance cost
+
+Astro's 0 KB product pages are impressive, but the architectural complexity of managing e-commerce state across islands will cost more in development time than the performance benefit provides.
+
+**Choose simplicity. Choose Nuxt.**
