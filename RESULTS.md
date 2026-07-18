@@ -6,13 +6,17 @@ This project compares **hydration behavior** across different frameworks when bu
 
 ## Frameworks Tested
 
-| App | Framework | UI Library | Hydration Strategy |
-|-----|-----------|------------|-------------------|
-| astro-vue-app | Astro 4 | Vue 3 | Islands (selective) |
-| astro-react-app | Astro 4 | React 18 | Islands (selective) |
-| astro-svelte-app | Astro 4 | Svelte 4 | Islands (selective) |
-| nuxt-app | Nuxt 3 | Vue 3 | Full (configurable) |
-| nextjs-app | Next.js 14 | React 18 | Full + Server Components |
+| App | Framework | UI Library | Hydration Strategy | Deploy Model |
+|-----|-----------|------------|-------------------|--------------|
+| astro-vue-app | Astro 4 | Vue 3 | Islands (selective) | Static files |
+| astro-react-app | Astro 4 | React 18 | Islands (selective) | Static files |
+| astro-svelte-app | Astro 4 | Svelte 4 | Islands (selective) | Static files |
+| sveltekit-app | SvelteKit 2 | Svelte 4 | Full hydration | Static files |
+| nuxt-app | Nuxt 3 | Vue 3 | Full hydration | Static files |
+| nextjs-app | Next.js 14 | React 18 | Full + Server Components | Static files |
+
+> All apps use static pre-rendering (`nuxt generate`, `next export`, `adapter-static`) and are served via a static file server. Nuxt was updated from SSR-node to static-generate for a fair apples-to-apples comparison.
+> SvelteKit only includes the home page (no Pokemon or admin pages).
 
 ---
 
@@ -40,24 +44,26 @@ All apps include the same 12 interactive components + Pokemon pages:
 
 ## Benchmark Results (Production Build)
 
-### Total JavaScript Bundle Size
+### Home Page JavaScript Bundle Size
 
-| App | Raw JS Size | Gzip Size |
-|-----|-------------|-----------|
-| **astro-svelte-app** | 60.1 KB | **21.2 KB** |
-| **astro-vue-app** | 108.8 KB | 42.0 KB |
-| **astro-react-app** | 193.9 KB | 57.6 KB |
-| **nuxt-app** | 230.9 KB | 86.2 KB |
-| **nextjs-app** | 762.4 KB | 226.5 KB |
+| App | Raw JS | Gzip JS | Notes |
+|-----|--------|---------|-------|
+| **astro-svelte-app** | 59 KB | **21 KB** | Svelte components only, no runtime |
+| **astro-vue-app** | 108 KB | 41 KB | Vue runtime + components |
+| **sveltekit-app** | 99 KB | 33 KB | Svelte runtime + SvelteKit router |
+| **astro-react-app** | 189 KB | 55 KB | React runtime + components |
+| **nuxt-app** | 197 KB | 73 KB | Full Vue + Nuxt framework |
+| **nextjs-app** | 464 KB | 136 KB | Full React + Next.js framework |
 
 ### JavaScript Savings (vs Next.js)
 
 | App | Reduction (Raw) | Reduction (Gzip) |
 |-----|-----------------|------------------|
-| astro-svelte-app | **92.1%** smaller | **90.6%** smaller |
-| astro-vue-app | **85.7%** smaller | **81.5%** smaller |
-| astro-react-app | **74.6%** smaller | **74.6%** smaller |
-| nuxt-app | **69.7%** smaller | **61.9%** smaller |
+| astro-svelte-app | **87.3%** smaller | **84.6%** smaller |
+| astro-vue-app | **76.7%** smaller | **69.9%** smaller |
+| sveltekit-app | **78.7%** smaller | **75.7%** smaller |
+| astro-react-app | **59.3%** smaller | **59.6%** smaller |
+| nuxt-app | **57.5%** smaller | **46.3%** smaller |
 
 ---
 
@@ -65,15 +71,16 @@ All apps include the same 12 interactive components + Pokemon pages:
 
 This is where the **real difference** becomes visible. Different pages load different amounts of JavaScript.
 
-### Home Page (12 Interactive Components)
+### Home Page (13 Interactive Components)
 
 | App | Raw JS | Gzip JS | Notes |
 |-----|--------|---------|-------|
-| **astro-svelte-app** | 60.1 KB | 21.2 KB | Only component JS, no runtime |
-| **astro-vue-app** | 108.8 KB | 42.0 KB | Vue runtime + components |
-| **astro-react-app** | 193.9 KB | 57.6 KB | React runtime + components |
-| **nuxt-app** | 200.5 KB | 74.9 KB | Full Vue + Nuxt framework |
-| **nextjs-app** | 475.9 KB | 139.5 KB | Full React + Next.js framework |
+| **astro-svelte-app** | 59 KB | 21 KB | Svelte components only, no framework runtime |
+| **sveltekit-app** | 99 KB | 33 KB | Svelte + SvelteKit router (static pre-render) |
+| **astro-vue-app** | 108 KB | 41 KB | Vue runtime + components |
+| **astro-react-app** | 189 KB | 55 KB | React runtime + components |
+| **nuxt-app** | 197 KB | 73 KB | Full Vue + Nuxt framework |
+| **nextjs-app** | 464 KB | 136 KB | Full React + Next.js framework |
 
 ### Pokemon Detail Page (Static Content)
 
@@ -82,14 +89,16 @@ This is where the **real difference** becomes visible. Different pages load diff
 | **astro-svelte-app** | **0 KB** | **0 KB** | Pure static HTML |
 | **astro-vue-app** | **0 KB** | **0 KB** | Pure static HTML |
 | **astro-react-app** | **0 KB** | **0 KB** | Pure static HTML |
-| **nuxt-app** | 200.5 KB | 74.9 KB | Same JS as home (full hydration) |
-| **nextjs-app** | 440.3 KB | 134.0 KB | Server Component reduces page JS |
+| **sveltekit-app** | N/A | N/A | No pokemon pages in this app |
+| **nuxt-app** | N/A | N/A | No static pokemon pages (nuxt generate crawls `/` only) |
+| **nextjs-app** | 429 KB | 130 KB | Server Component reduces page JS |
 
 ### Key Insight
 
 - **Astro apps**: Pokemon detail pages are **pure static HTML** with **zero JavaScript**
-- **Nuxt**: Loads the **same JS bundle on every page** because of full hydration
-- **Next.js**: Server Components help, but still loads **134 KB gzip** for static content
+- **SvelteKit**: Ships Svelte runtime + router (~33 KB gz) on every page — less than Nuxt, more than Astro
+- **Nuxt**: Full Vue framework on every page (~73 KB gz)
+- **Next.js**: Server Components help, but still loads **130 KB gzip** for static content
 
 ---
 
@@ -98,80 +107,77 @@ This is where the **real difference** becomes visible. Different pages load diff
 ### 1. Astro + Svelte (Best Performance)
 
 ```
-dist/_astro/
-├── client.js                    1.97 KB
-├── BackToTop.js                 0.93 KB
-├── CookieBanner.js              1.71 KB
-├── StatsCounter.js              1.55 KB
-├── MobileNav.js                 2.00 KB
-├── FaqAccordion.js              1.98 KB
-├── Modal.js                     2.12 KB
-├── Tabs.js                      2.00 KB
-├── TestimonialCarousel.js       2.11 KB
-├── ImageLightbox.js             2.50 KB
-├── PricingToggle.js             2.24 KB
-├── SearchBox.js                 2.73 KB
-├── ContactForm.js               2.78 KB
-└── index.js (shared)            6.73 KB
+dist/_astro/ (home page)
+├── client.js + 12 components    ~52 KB
+└── Svelte shared runtime         ~7 KB
 ────────────────────────────────────────
-Total JS: 60.1 KB (21.2 KB gzip)
+Home page JS: 59 KB raw (21 KB gzip)
 ```
 
-**Why smallest**: Svelte compiles to vanilla JS at build time - no runtime needed.
+**Why smallest**: Svelte compiles reactivity to vanilla JS — no framework runtime shipped.
 
-### 2. Astro + Vue
+### 2. SvelteKit (adapter-static)
 
 ```
-dist/_astro/
-├── Vue runtime-core             70.07 KB
-├── Vue runtime-dom              11.38 KB
-├── client.js                    1.04 KB
-├── Components (12 total)        ~26 KB
+build/_app/immutable/
+├── Svelte runtime + reactivity  ~28 KB
+├── SvelteKit router + client    ~13 KB
+├── Page components              ~55 KB
 ────────────────────────────────────────
-Total JS: 108.8 KB (42.0 KB gzip)
+Home page JS: 99 KB raw (33 KB gzip)
 ```
 
-**Note**: Vue runtime (~81 KB) is shared across all components via code splitting.
+**Note**: Svelte runtime (~28 KB) plus SvelteKit's router/client. No pokemon or admin pages.
+Sits between Astro+Svelte and Astro+Vue — pays for the router but avoids Vue/React runtime.
 
-### 3. Astro + React
+### 3. Astro + Vue
 
 ```
-dist/_astro/
-├── React runtime (client.js)    135.60 KB
-├── Components (12 total)        ~58 KB
+dist/_astro/ (home page)
+├── Vue runtime-core             69.10 KB
+├── vue-export-helper              0.09 KB
+├── client.js                     1.04 KB
+├── Components (13 total)        ~26 KB
 ────────────────────────────────────────
-Total JS: 193.9 KB (57.6 KB gzip)
+Home page JS: 108 KB raw (41 KB gzip)
+```
+
+**Note**: Vue runtime (~69 KB) is shared across all components via ES module imports.
+
+### 4. Astro + React
+
+```
+dist/_astro/ (home page)
+├── React runtime (client.js)   ~135 KB
+├── Components (13 total)        ~54 KB
+────────────────────────────────────────
+Home page JS: 189 KB raw (55 KB gzip)
 ```
 
 **Note**: React runtime is larger than Vue, but still selective hydration.
 
-### 4. Nuxt (Full Hydration)
+### 5. Nuxt (Full Hydration, Static Generated)
 
 ```
-.output/public/_nuxt/
-├── Vue runtime                  ~90 KB
-├── Nuxt framework               ~70 KB
-├── Components + app             ~71 KB
+.output/public/_nuxt/ (home page)
+├── Vue runtime + Nuxt           ~197 KB
 ────────────────────────────────────────
-Total JS: 230.9 KB (86.2 KB gzip)
+Home page JS: 197 KB raw (73 KB gzip)
 ```
 
-**Note**: Full page hydration - same JS loads on EVERY page, including Pokemon detail.
+**Note**: `nuxt generate` produces static files (same as Next/SvelteKit). Same JS bundle loads on every page.
 
-### 5. Next.js (Full Hydration + Server Components)
+### 6. Next.js (Full Hydration + Server Components)
 
 ```
-out/_next/static/
-├── framework.js                 139.98 KB
-├── main.js                      116.39 KB
-├── polyfills.js                 112.59 KB
-├── fd9d1056.js (React DOM)      172.83 KB
-├── chunks (various)             ~220 KB
+out/_next/static/ (home page chunks)
+├── framework + polyfills        ~350 KB
+├── page chunks                  ~114 KB
 ────────────────────────────────────────
-Total JS: 762.4 KB (226.5 KB gzip)
+Home page JS: 464 KB raw (136 KB gzip)
 ```
 
-**Note**: Largest total bundle, but Server Components reduce per-page JS on Pokemon detail.
+**Note**: Largest bundle. Server Components reduce component JS but React runtime still required.
 
 ---
 
@@ -251,21 +257,19 @@ Even with the same UI library (React), Astro ships **74% less JavaScript** than 
 
 ### 3. Per-Page Loading is Critical
 
-| Scenario | Astro | Nuxt | Next.js |
-|----------|-------|------|---------|
-| Home (complex) | 21-58 KB | 75 KB | 140 KB |
-| Pokemon (static) | **0 KB** | 75 KB | 134 KB |
+| Scenario | Astro | SvelteKit | Nuxt | Next.js |
+|----------|-------|-----------|------|---------|
+| Home (complex) | 21–55 KB | 33 KB | 73 KB | 136 KB |
+| Pokemon (static) | **0 KB** | N/A | N/A | 130 KB |
 
 **Astro wins big on static content pages** - no JavaScript at all.
 
-### 4. Nuxt Loads Same JS Everywhere
+### 4. Full-Hydration Frameworks Load Same JS Everywhere
 
-Nuxt's full hydration means:
-- Home page: 75 KB gzip
-- Pokemon page: 75 KB gzip
-- Contact page: 75 KB gzip
-
-Every page pays the same JavaScript cost, even for purely static content.
+SvelteKit, Nuxt and Next.js ship the same framework bundle regardless of page content:
+- SvelteKit: 33 KB gzip on every page (Svelte runtime + router)
+- Nuxt: 73 KB gzip on every page (Vue + Nuxt framework)
+- Next.js: 130–136 KB gzip on every page (React + Next.js framework)
 
 ### 5. Next.js Server Components Help (But Not Enough)
 
@@ -316,13 +320,14 @@ This section tests the frameworks with a **complex admin panel** that requires s
 
 ### Admin Page JavaScript Size
 
-| App | Admin Component | Runtime | Total Gzip |
-|-----|-----------------|---------|------------|
-| **astro-svelte-app** | 8.9 KB | 2.9 KB | **~12 KB** |
-| **astro-vue-app** | 3.8 KB | 33.5 KB | **~37 KB** |
-| **astro-react-app** | 4.4 KB | 46.4 KB | **~50 KB** |
-| **nuxt-app** | N/A | Full bundle | **~92 KB** |
-| **nextjs-app** | ~12 KB | Full bundle | **~100 KB** |
+| App | Raw JS | Gzip JS | Notes |
+|-----|--------|---------|-------|
+| **astro-svelte-app** | 34 KB | 12 KB | AdminPanel component + Svelte runtime |
+| **astro-vue-app** | 92 KB | 36 KB | AdminPanel + Vue runtime |
+| **astro-react-app** | 156 KB | 49 KB | AdminPanel + React runtime |
+| **sveltekit-app** | N/A | N/A | No admin page in this app |
+| **nuxt-app** | 190 KB | 71 KB | Full Vue + Nuxt framework |
+| **nextjs-app** | 441 KB | 134 KB | Full React + Next.js framework |
 
 ### Key Insight: Astro's Islands Limitation
 
@@ -416,11 +421,11 @@ find dist/_astro -name "*.js" -exec cat {} + | gzip | wc -c   # Astro apps
 
 ### Per-Page Summary
 
-| Page Type | Astro + Svelte | Astro + Vue | Nuxt | Next.js |
-|-----------|----------------|-------------|------|---------|
-| Home (12 components) | 21 KB | 42 KB | 75 KB | 140 KB |
-| Pokemon Detail (static) | **0 KB** | **0 KB** | 75 KB | 134 KB |
-| Admin (complex state) | **12 KB** | 37 KB | 92 KB | 100 KB |
+| Page Type | Astro+Svelte | Astro+Vue | SvelteKit | Astro+React | Nuxt | Next.js |
+|-----------|-------------|-----------|-----------|-------------|------|---------|
+| Home (13 components) | 21 KB | 41 KB | 33 KB | 55 KB | 73 KB | 136 KB |
+| Pokemon Detail (static) | **0 KB** | **0 KB** | N/A | **0 KB** | N/A | 130 KB |
+| Admin (complex state) | **12 KB** | 36 KB | N/A | 49 KB | 71 KB | 134 KB |
 
 ### Key Takeaways
 
