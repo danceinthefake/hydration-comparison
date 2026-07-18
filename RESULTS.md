@@ -310,8 +310,9 @@ Server Components reduce component-level hydration, but:
 | Approach | Pros | Cons |
 |----------|------|------|
 | **Astro Islands** | Zero JS for static pages, minimal bundle | More setup for complex state sharing |
-| **Nuxt Full Hydration** | Simple mental model, full Vue reactivity | Same large bundle on every page |
-| **Next.js Server Components** | Reduced component hydration, React ecosystem | Large base runtime, complex model |
+| **SvelteKit Full Hydration** | Natural Svelte stores, lightest full-hydration option (23–36 KB gz) | Pays for runtime on every page (unlike Astro) |
+| **Nuxt Full Hydration** | Simple mental model, full Vue reactivity | 2–3× heavier than SvelteKit on every page |
+| **Next.js Server Components** | Reduced component hydration, React ecosystem | Largest base runtime, complex model |
 
 ---
 
@@ -375,14 +376,16 @@ This section tests the frameworks with a **complex admin panel** that requires s
 - Cannot use Vue/React context across islands
 - Best suited for independent interactive components
 
-**Nuxt/Next.js advantage for admin UIs:**
-```vue
-<!-- Nuxt: Components naturally share state -->
+**SvelteKit/Nuxt/Next.js advantage for admin UIs:**
+```svelte
+<!-- SvelteKit: Components naturally share Svelte stores -->
 <SearchBox />           <!-- Can access shared store -->
 <TypeFilters />         <!-- Can access shared store -->
 <PokemonTable />        <!-- Can access shared store -->
 <SelectionSummary />    <!-- Can access shared store -->
 ```
+
+**SvelteKit is the winner here**: same natural state sharing as Nuxt/Next.js, but **2.6× lighter than Nuxt** (28 KB vs 74 KB gz) and **5× lighter than Next.js** (28 KB vs 140 KB gz) on the admin page.
 
 ### Component Size Comparison
 
@@ -414,10 +417,12 @@ Even for complex admin panels, **Svelte's compiled output is smallest**:
 
 | Scenario | Best Choice |
 |----------|-------------|
-| Admin panel with complex shared state | **Nuxt** or **Next.js** (natural state sharing) |
-| Admin panel where bundle size critical | **Astro + Svelte** (single island) |
+| Admin panel with complex shared state | **SvelteKit**, **Nuxt**, or **Next.js** (natural state sharing via stores/context) |
+| Admin panel where bundle size critical | **Astro + Svelte** (single island, 13 KB gz) or **SvelteKit** (28 KB gz) |
 | Simple dashboards | **Astro** with separate islands |
-| Full-featured web apps | **Nuxt** or **Next.js** |
+| Full-featured web apps (Svelte) | **SvelteKit** (lightest full-hydration option) |
+| Full-featured web apps (Vue) | **Nuxt** |
+| Full-featured web apps (React) | **Next.js** |
 
 ---
 
@@ -458,18 +463,18 @@ find dist/_astro -name "*.js" -exec cat {} + | gzip | wc -c   # Astro apps
 
 1. **For static content pages** (blogs, documentation, product pages): **Astro's islands architecture** delivers massive JavaScript savings by shipping zero JS.
 
-2. **For complex interactive pages** (admin panels, dashboards): **Astro still wins on bundle size**, but requires bundling shared state into a single island component.
+2. **For complex interactive pages** (admin panels, dashboards): **SvelteKit is the clear winner among full-hydration frameworks** — natural state sharing (Svelte stores) at 28 KB gz, vs 74 KB Nuxt and 140 KB Next.js. Astro+Svelte is still lightest (13 KB gz) but requires a single monolithic island.
 
-3. **For full-featured web apps** where development experience matters more than bundle size: **Nuxt or Next.js** provide natural state sharing across components.
+3. **For full-featured web apps** where natural state sharing across components matters: **SvelteKit** (Svelte), **Nuxt** (Vue), or **Next.js** (React). SvelteKit ships 2–5× less JS than the other two while offering the same developer experience for state management.
 
-### The Astro Islands Trade-off
+### The Full-Hydration Comparison
 
-| Scenario | Astro | Nuxt/Next.js |
-|----------|-------|--------------|
-| Multiple independent interactive components | Easy (multiple islands) | Standard |
-| Complex shared state across components | Harder (single large island) | Natural |
-| Static content pages | **Zero JS** | Always loads runtime |
-| Bundle size | Smallest | Larger |
+| Scenario | Astro | SvelteKit | Nuxt | Next.js |
+|----------|-------|-----------|------|---------|
+| Complex shared state | Harder (single island) | **Natural** (stores) | Natural | Natural |
+| Static content pages | **Zero JS** | 23 KB gz | 77 KB gz | 136 KB gz |
+| Complex app pages | N/A | **28 KB gz** | 74 KB gz | 140 KB gz |
+| Bundle efficiency | Smallest | **Lightest full-hydration** | 2.6× heavier than SK | 5× heavier than SK |
 
 **Bottom Line**: Choose Astro for content-heavy sites with occasional interactivity. Choose Nuxt/Next.js for application-heavy sites where every page needs complex reactivity.
 
