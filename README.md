@@ -11,6 +11,7 @@ A comparison of SSR hydration strategies across modern web frameworks, testing r
 | [astro-svelte-app](./astro-svelte-app) | Astro + Svelte | 4321 |
 | [nuxt-app](./nuxt-app) | Nuxt 3 | 3000 |
 | [nextjs-app](./nextjs-app) | Next.js 14 | 3001 |
+| [sveltekit-app](./sveltekit-app) | SvelteKit (static) | 3002 |
 
 ## Quick Start
 
@@ -21,6 +22,7 @@ cd astro-react-app && npm install && cd ..
 cd astro-svelte-app && npm install && cd ..
 cd nuxt-app && npm install && cd ..
 cd nextjs-app && npm install && cd ..
+cd sveltekit-app && npm install && cd ..
 ```
 
 ## Running Apps
@@ -42,6 +44,9 @@ cd nuxt-app && npm run dev
 
 # Next.js
 cd nextjs-app && npm run dev
+
+# SvelteKit
+cd sveltekit-app && npm run dev
 ```
 
 ### Production
@@ -61,6 +66,9 @@ cd nuxt-app && npm run prod
 
 # Next.js
 cd nextjs-app && npm run prod
+
+# SvelteKit
+cd sveltekit-app && npm run prod
 ```
 
 ## Interactive Features
@@ -81,6 +89,7 @@ All apps include the same interactive components:
 | Astro + Svelte | ~30KB |
 | Astro + Vue | ~45KB |
 | Astro + React | ~55KB |
+| SvelteKit (static) | ~36KB |
 | Nuxt | ~150KB |
 | Next.js | ~200KB+ |
 
@@ -107,6 +116,8 @@ hydration-comparison/
 │   └── components/         # Vue components
 ├── nextjs-app/             # Next.js 14
 │   └── components/         # React components
+├── sveltekit-app/          # SvelteKit (adapter-static)
+│   └── src/lib/components/ # Svelte components
 ├── RESULTS.md              # Detailed comparison results
 └── README.md               # This file
 ```

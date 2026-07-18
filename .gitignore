@@ -7,10 +7,12 @@ dist/
 out/
 .next/
 .nuxt/
+build/
 
 # Cache
 .cache/
 .astro/
+.svelte-kit/
 
 # Logs
 *.log
@@ -33,3 +35,4 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
+.claude/settings.local.json
